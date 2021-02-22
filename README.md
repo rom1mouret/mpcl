@@ -1,9 +1,37 @@
-# Meaning-preserving Continual Learning
+# Meaning-preserving Continual Learning (MPCL)
 
 This is a follow-up to [domain_IL](https://github.com/rom1mouret/domain_IL).
 The core idea remains the same.
 
-### Introduction with an example
+### Situated meaning
+
+MPCL posits that latent representations acquire meaning from acting on the
+outside world.
+
+For continual learning to be manageable in complex environments and avoid
+[catastrophic forgetting](https://github.com/rom1mouret/forgetful-networks),
+meaning must remain stable over time. This is the core idea behind MPCL.
+Note that stability does not entail idleness:
+it is okay to refine the representation models so long
+as representations keep fulfilling their purpose.
+
+MPCL borrows ideas from [embodied cognition](https://en.wikipedia.org/wiki/Embodied_cognition),
+but I should point out that MPCL is not completely in line with current embodied/situated cognition theories,
+and that my focus is on continual learning and catastrophic forgetting, not on embodied AI.
+
+In my version of situated cognition, meaning is central. Meaning is that
+connection with the outside world that needs stability.
+Traditionally, it is the programmer who gets to determine the meaning of the
+inputs and outputs of his/her algorithm, as meaning doesn't magically emerge
+out of the syntactic intricacies of algorithms.
+Similarly, intelligent behavior does not naturally emerge from isolated algorithms,
+for an intelligent algorithm can only be perceived as such if it does something
+*meaningful* in the eyes of the observers, i.e. a behavior pattern can only be
+recognized as intelligent insofar as it is intelligible.
+
+I further justify this choice of terminology at the end of this README.
+
+### Concrete example
 
 Your system's training journey might start like that:
 - task A1: time T0 to T1: training the model to recognize human faces.
@@ -61,23 +89,7 @@ MPCL relies on finding inconsistencies to detect domain boundaries.
 
 `*` At the very least, *some* of the latent units share the same function
 between photographs and real life, while *some* other units' function might be
-specialized for specific kinds of domains.
-
-
-### Terminology
-
-A *group* of latent units has a *function*.
-Within this group, individual latent units have a *meaning*.
-
-It's called the *Meaning*-preserving Continual Learning framework because I plan
-on extending this idea to function-free intrinsic meaning (latent units that get
-their meaning from adjacent units), in contrast to extrinsic meaning (latent
-units that get their meaning from external labels/feedback). "Function" wouldn't
-be a good fit here.
-
-Also, the typical way of detecting inconsistencies is to look for configurations
-of latent values that do not realize any function, i.e. they are meaningless.
-In this context, "meaning" is intuitive.
+specialized in specific kinds of domains.
 
 ## Domain-IL classification on Permuted MNIST
 
@@ -134,6 +146,8 @@ been transformed.
 
 ![Permuted MNIST](images/emnist_results.png)
 
+As with Domain-IL, the model was trained with `increment=1`, the most challenging scenario.
+
 code: [emnist_class_il.py](emnist_class_il.py), [plot_emnist.py](plot_emnist.py)
 
 The green curve shows how a collection of one-class classifiers would perform,
@@ -143,6 +157,8 @@ under some simplifying assumptions.
 - false negative rate is 0%.
 - if multiple classifiers report a positive match, we randomly choose between them.
 
+In simple settings such as MNIST and EMNIST, MPCL boils down to self-supervised
+outlier detection. I believe it will prove more fruitful in more complex settings.
 
 ## Triangular activation
 
@@ -161,10 +177,10 @@ ill-equipped for measuring confidence levels on OOD data.
 It is not a matter of calibration.
 It's fine for a classifier to be overconfident / underconfident in a consistent
 fashion, but we can't afford the network to throw in the towel when it
-encounters something it doesn't know, like noise.  
+encounters something it doesn't know.  
 
-I prefer `Triangle` because it doesn't throw anything away. It merely folds the
-input space.
+I prefer `Triangle` because it doesn't throw anything away, not even noise.
+It merely folds the input.
 
 Disclaimer: I haven't studied in depth the dynamics of Triangle-activated
 networks so it's possible that Triangle doesn't do what I think it does.
@@ -180,3 +196,22 @@ upstream of `x`) to be transferable to other tasks.
 
 It doesn't affect Permuted MNIST and EMNIST results that much because latent
 representations are not transferred to other tasks in our experimental setup.
+
+
+### Terminology
+
+A *group* of latent units has a *function*.
+Within this group, individual latent units have a *meaning*.
+
+It doesn't have to be called "meaning", but the word "meaning" is intuitive
+for a number of reasons. As mentioned above, it has an obvious connection with
+intelligibility, a prerequisite to qualifying behavior patterns as rational
+or intelligent.
+
+Furthermore, the typical way of detecting inconsistencies is to look for configurations
+of latent values that are *meaningless*, in the sense that they do not realize
+any function.
+
+I plan on extending MPCL to function-free intrinsic meaning (latent units that get
+their meaning from adjacent units), in contrast to extrinsic meaning (latent
+units that get their meaning from external labels/feedback).
