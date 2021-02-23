@@ -5,7 +5,7 @@ The core idea remains the same.
 
 ### Situated meaning
 
-MPCL posits that latent representations acquire meaning from acting on the
+MPCL posits that latent representations acquire meaning by acting on the
 outside world.
 
 For continual learning to be manageable in complex environments and avoid
@@ -215,3 +215,99 @@ any function.
 I plan on extending MPCL to function-free intrinsic meaning (latent units that get
 their meaning from adjacent units), in contrast to extrinsic meaning (latent
 units that get their meaning from external labels/feedback).
+
+### FAQ
+
+##### > Must domain/task labels be known at training time?
+
+Yes, this is how I have evaluated my models.
+It is not a hard constraint from the framework though.
+
+##### > Must domain/task labels be known at runtime?
+
+No.
+
+##### > Can it be used for regression?
+
+I haven't tried regression with MPCL.
+It comes with a few challenges.
+1. If the regression model has only one numerical output,
+it won't be enough to constrain multi-dimensional latent layers,
+unless latent values are sparse or binary.
+2. I am not sure what would be the best way to detect inconsistencies from numerical outputs.
+Perhaps an ensemble of regressors could reveal discrepancies.
+
+A workaround is to train the processors with a surrogate classification loss and have the classifier predict
+both labels and the desired numerical targets at the same time.
+
+##### > Can an MPCL system run at fixed capacity?
+
+No, the system grows indefinitely as it learns new domains,
+but infrequently used domains can be safely removed to free up some space.
+Alternatively, they can be distilled down to smaller models.
+
+##### > Can models be revisited later on when new training examples are made available?
+
+Yes.
+
+
+##### > If domains A and B are similar, does learning A help with learning B?
+
+Not in vanilla MPCL.
+But nothing stops you from implementing multi-task learning orthogonally to MPLC.
+For instance, you can [implement soft parameter sharing](https://ruder.io/multi-task/index.html#softparametersharing) between processors.
+
+##### > Can trained latent layers be safely connected to other modules without interference risks?
+
+Yes, that's the whole point of MPCL.
+When new domains are learned, it is beneficial to downstream modules,
+rather than destructive, as in this [zero-shot learning experiment](https://github.com/rom1mouret/domain_IL).
+
+##### > Is there any limitation to the expressive power of MPCL models?
+
+Feature processors can be arbitrarily complex,
+though it is better if they don't aggressively filter noise out.
+They don't have to be differentiable.
+However, the [models mapping latent representations to external labels/actions are highly constrained](MPCL-Framework-v1.pdf).
+In practice, linear mapping should do fine.
+
+##### > Does MPCL operate on the same level as common continual learning algorithms such as [EWS](https://arxiv.org/pdf/1612.00796.pdf)?
+
+Not exactly.
+The starting point of MPCL is a principle as abstract as [Hebb's rule](https://en.wikipedia.org/wiki/Hebbian_theory) or the [free energy principle](https://en.wikipedia.org/wiki/Free_energy_principle).
+Simply put, this principle states that situated meaning must remain stable across time.
+MPCL is an attempt to derive an actionable framework from this (somewhat vague) principle.
+
+##### > Must processors be trained one class at a time in the Class-IL setting?
+
+Yes. If you get your data with `increment>1`, split the data into 1-increments.
+
+##### > Isn't just glorified [one-class classification](https://en.wikipedia.org/wiki/One-class_classification) with a surrogate loss?
+
+Maybe.
+I haven't pushed MPCL far enough to see if it can bring something truly new to ML.
+It would certainly look less like one-class classification if you were to apply it to highly modular architectures.
+
+##### > Does AI have to be modular? Why not a single neural network?
+
+I am agnostic to this question, but MPCL does rely on the assumption that
+the system can be broken down into modules.
+
+##### > Is MPCL biologically plausible?
+
+Hopefully it is at some abstract level, but it is definitely not in any general sense
+of biological plausibility.
+For one thing, brains cannot allocate new feature processors out of thin air.
+Also, the outside world is not labeled.
+
+##### > How to train non-differentiable models within this framework?
+
+Processors (inputs -> latent) and classifiers/regressors (latent -> targets) are typically trained conjointly,
+which is where gradient descent shines, provided all the models involved are differentiable.
+
+You may be able to get good results
+with [coordinate descent](https://en.wikipedia.org/wiki/Coordinate_descent) on non-differentiable models.
+
+Alternatively, if the classifiers/regressors are designed to be analytically invertible,
+then you can calculate the latent values that correspond to the targets, and train processors to
+predict the latent values as if they were the ground-truth.
