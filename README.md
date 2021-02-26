@@ -3,6 +3,11 @@
 This is a follow-up to [domain_IL](https://github.com/rom1mouret/domain_IL).
 The core idea remains the same.
 
+```diff
++ 2021 Feb update: MPCL rules are now explained in the slides.
+```
+Link to [MPCL_v1_slides.pdf](MPCL_v1_slides.pdf)
+
 ### Situated meaning
 
 MPCL posits that latent representations acquire meaning by acting on the
