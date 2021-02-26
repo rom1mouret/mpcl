@@ -1,7 +1,7 @@
 # Meaning-preserving Continual Learning (MPCL)
 
 This is a follow-up to [domain_IL](https://github.com/rom1mouret/domain_IL).
-The core idea remains the same.
+The core idea remains the same but it is framed a bit differently.
 
 ```diff
 + 2021 Feb update: MPCL rules are now explained in the slides.
@@ -16,25 +16,35 @@ outside world.
 For continual learning to be manageable in complex environments and avoid
 [catastrophic forgetting](https://github.com/rom1mouret/forgetful-networks),
 meaning must remain stable over time. This is the core idea behind MPCL.
-Note that stability does not entail idleness:
-it is okay to refine the representation models so long
-as representations keep fulfilling their purpose.
 
 MPCL borrows ideas from [embodied cognition](https://en.wikipedia.org/wiki/Embodied_cognition),
-but I should point out that MPCL is not completely in line with current embodied/situated cognition theories,
-and that my focus is on continual learning and catastrophic forgetting, not on embodied AI.
+but I should point out that MPCL is not completely in line with current embodied/situated cognition theories.
+In particular, MPCL version1 is very much human-aligned, and not well suited for
+dealing with autonomous robots and other forms of embodied intelligence.
 
-In my version of situated cognition, meaning is central. Meaning is that
-connection with the outside world that needs stability.
-Traditionally, it is the programmer who gets to determine the meaning of the
-inputs and outputs of his/her algorithm, as meaning doesn't magically emerge
-out of the syntactic intricacies of algorithms.
-Similarly, intelligent behavior does not naturally emerge from isolated algorithms,
-for an intelligent algorithm can only be perceived as such if it does something
-*meaningful* in the eyes of the observers, i.e. a behavior pattern can only be
-recognized as intelligent insofar as it is intelligible.
+In MPCL, meaning is central.
+As the inputs and outputs of algorithms have no intrinsic meaning,
+it is often the prerogative of the programmer to attach meaning to variables.
 
-I further justify this choice of terminology at the end of this README.
+There are two kinds of meaning at play here.
+
+1. meaning that emerges from the interplay with the environment. For instance,
+frogs might be seeing insects as mere calorie dispensers. Needless to say, humans don't see insects the same way.
+2. meaning from the programmer's perspective, which roughly aligns with all the other humans.
+
+Since the programmer's perspective is a byproduct of her environment, it is not
+too much of a leap to view her perspective as a gateway to her environment.
+This is how I want to get away with explicitly modeling the environment in MPCL v1.
+Take for instance a model categorizing x-ray images of tumors into malignant or benign.
+If the model is deployed in a hospital, those labels have a tangible impact on the
+environment.
+
+So MPCL has two jobs:
+
+- aligning the two kinds of meaning. I believe the more training examples we
+provide, the more the first kind converges towards the second kind.
+- making sure meaning remains stable.
+
 
 ### Concrete example
 
@@ -209,10 +219,9 @@ A *group* of latent units has a *function*.
 Within this group, individual latent units have a *meaning*.
 
 It doesn't have to be called "meaning", but the word "meaning" is intuitive
-for a number of reasons. As mentioned above, it has an obvious connection with
+for a number of reasons. First, it has an obvious connection with
 intelligibility, a prerequisite to qualifying behavior patterns as rational
 or intelligent.
-
 Furthermore, the typical way of detecting inconsistencies is to look for configurations
 of latent values that are *meaningless*, in the sense that they do not realize
 any function.
@@ -240,7 +249,7 @@ It comes with a few challenges.
 it won't be enough to constrain multi-dimensional latent layers,
 unless latent values are sparse or binary.
 2. I am not sure what would be the best way to detect inconsistencies from numerical outputs.
-Perhaps an ensemble of regressors could reveal discrepancies.
+Perhaps an ensemble of regressors could reveal discrepancies, or a Bayesian NN.
 
 A workaround is to train the processors with a surrogate classification loss and have the classifier predict
 both labels and the desired numerical targets at the same time.
@@ -304,6 +313,8 @@ Hopefully it is at some abstract level, but it is definitely not in any general 
 of biological plausibility.
 For one thing, brains cannot allocate new feature processors out of thin air.
 Also, the outside world is not labeled.
+
+
 
 ##### > How to train non-differentiable models within this framework?
 
