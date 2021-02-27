@@ -29,11 +29,13 @@ it is often the prerogative of the programmer to attach meaning to variables.
 There are two kinds of meaning at play here.
 
 1. meaning that emerges from the interplay with the environment. For instance,
-frogs might be seeing insects as mere calorie dispensers. Needless to say, humans don't see insects the same way.
-2. meaning from the programmer's perspective, which roughly aligns with all the other humans.
+frogs might view insects as mere calorie dispensers. Needless to say,
+humans don't see insects the same way.
+2. meaning from the programmer's perspective, which roughly aligns
+with [all the other humans](https://en.wikipedia.org/wiki/Intersubjectivity).
 
-Since the programmer's perspective is a byproduct of her environment, it is not
-too much of a leap to view her perspective as a gateway to her environment.
+Since the programmer's perspective (e.g. labels) is a byproduct of her environment,
+it is not too much of a leap to treat her perspective as a proxy for her environment.
 This is how I want to get away with explicitly modeling the environment in MPCL v1.
 Take for instance a model categorizing x-ray images of tumors into malignant or benign.
 If the model is deployed in a hospital, those labels have a tangible impact on the
@@ -41,50 +43,48 @@ environment.
 
 So MPCL has two jobs:
 
-- aligning the two kinds of meaning. I believe the more training examples we
-provide, the more the first kind converges towards the second kind.
-- making sure meaning remains stable.
+- making sure the two kinds of meaning align. As we provide more and more training examples,
+I expect the first kind of meaning to converge towards the second kind.
+- making sure meaning remains stable over time.
 
 
 ### Concrete example
 
 Your system's training journey might start like that:
-- task A1: time T0 to T1: training the model to recognize human faces.
-- task B: time T2 to T3: training the model to tell cats and dogs apart.
-- task A2: time T4 to T5: training the model to get better at recognizing human
-faces, maybe in a novel environment.
+- module A: time T0 to T1: training the model to recognize human faces.
+- module B: time T2 to T3: training the model to tell cats and dogs apart.
+- module A: time T4 to T5: training the model to get better at recognizing human
+faces, maybe in a novel context.
 
 At time T1, your model and its latent units are perfectly fit for recognizing
 faces within domains it was trained on.
 
 At time T2, your model moves on to learning to distinguish between cats and dogs.
-It can build on task A1's latent layer but it should not interfere with it
-because the function of task A1's latent layer is to recognize human faces, not
-to recognize human faces AND pets. In programming terms, task A1's network is
+It can build on module A's latent layer but it should not interfere with it
+because the function of module A's latent layer is to recognize human faces, not
+to recognize human faces AND pets. In programming terms, module A's network is
 entirely frozen between T2 and T3.
 
 At T4, we are back to face recognition.
-Task A1's latent representation can be safely refined as long as it keeps on
+Module A's latent representation can be safely refined as long as it keeps on
 fulfilling the same invariant function.
-This might interfere with Task B, but not in a
+This might interfere with module B, but not in a
 [destructive manner](https://en.wikipedia.org/wiki/Catastrophic_interference).
 
 ### Theoretical framework
 
-In broad terms, we anchor/tether/ground latent representations by forcing them
+In broad terms, we anchor latent representations by forcing them
 to remain good at realizing the function they were originally trained for.
 How the system realizes the
 function-that-latent-representations-were-originally-trained-for *is* what
 defines latent representations.
 
-An important distinction to make is that such functions are not about mapping
-some input domain to an output domain.
-It's all about the output.
+(By "function" I do not mean the mapping from sensory inputs to labels.
+I mean the functions that map latent representations to labels, or other kinds of outputs.
 Recognizing faces in photographs fulfills the same function as recognizing faces
 in real life.
-The input domain hardly matters `*`.
 Your friend's face is an abstraction in virtue of the realizability of the same
-recognition function across many domains/environments.
+recognition function across many domains/contexts.)
 
 Now, my goal is to formalize this idea and characterize the "meaning of latent
 units" in more rigorous terms.
@@ -92,19 +92,25 @@ units" in more rigorous terms.
 [link to MPCL Framework v1 pdf](MPCL-Framework-v1.pdf)
 
 I will also attempt to frame bare-bones [Domain-IL and Class-IL](https://arxiv.org/pdf/1904.07734v1.pdf)
-within this framework (see below).
+within this framework on MNIST and EMNIST datasets.
 Admittedly, it takes a bit of shoehorning because simple systems don't create
 many opportunities for MPCL to take advantage of the complexity to find
 inconsistencies, for example by cross-checking predictions from multiple modules
 of the system.  
+
 Moreover, complex systems are generally upheld by high-dimensional latent
 representations, with a [lot of empty space](https://en.wikipedia.org/wiki/Curse_of_dimensionality#Blessing_of_dimensionality)
 wherein you would typically spot inconsistent configurations of latent values.
 MPCL relies on finding inconsistencies to detect domain boundaries.
 
-`*` At the very least, *some* of the latent units share the same function
-between photographs and real life, while *some* other units' function might be
-specialized in specific kinds of domains.
+You will notice that the implemented system doesn't showcase any of the
+inter-module [MPCL rules](MPCL_v1_slides.pdf).
+This is because MNIST and EMNIST are not readily modularizable problems, so
+we are essentially stuck with the one-module scenario.
+
+Nevertheless, it is a requirement for MPCL to perform well one one-module scenarios.
+Otherwise, it won't scale well to multiple modules.
+
 
 ## Domain-IL classification on Permuted MNIST
 
@@ -207,10 +213,10 @@ Softmaxing the last layer of the classifier was a mistake and I will try without
 softmax in subsequent experiments.
 Softmax is not a good choice for MPCL because there are infinite solutions to
 `softmax(x) = y`, thus it doesn't constrain `x` enough for `x` (or anything
-upstream of `x`) to be transferable to other tasks.
+upstream of `x`) to be transferable to other modules.
 
 It doesn't affect Permuted MNIST and EMNIST results that much because latent
-representations are not transferred to other tasks in our experimental setup.
+representations are not transferred to other modules in our experimental setup.
 
 
 ### Terminology
@@ -232,18 +238,31 @@ units that get their meaning from external labels/feedback).
 
 ### FAQ
 
-##### > Must domain/task labels be known at training time?
+##### > Must domain labels be known at training time?
 
 Yes, this is how I have evaluated my models.
 It is not a hard constraint from the framework though.
 
-##### > Must domain/task labels be known at runtime?
+##### > Must domain labels be known at runtime?
 
 No.
 
+##### > Must module labels be known at runtime?
+
+Yes. It is not a hard constraint from the framework either.
+
+##### > Must task labels be known at runtime?
+
+I find the idea of task confusing so it is no longer part of the framework.
+
+There is a single task in Permuted MNIST, that of classifying digits.
+
+The so-called Permuted MNIST tasks are treated as domains/contexts by MPCL,
+so they don't need to be known at runtime.
+
 ##### > Can it be used for regression?
 
-I haven't tried regression with MPCL.
+I haven't tried regression yet.
 It comes with a few challenges.
 1. If the regression model has only one numerical output,
 it won't be enough to constrain multi-dimensional latent layers,
@@ -256,7 +275,7 @@ both labels and the desired numerical targets at the same time.
 
 ##### > Can an MPCL system run at fixed capacity?
 
-No, the system grows indefinitely as it learns new domains,
+No, the system keeps growing as it learns new domains,
 but infrequently used domains can be safely removed to free up some space.
 Alternatively, they can be distilled down to smaller models.
 
@@ -268,7 +287,7 @@ Yes.
 ##### > If domains A and B are similar, does learning A help with learning B?
 
 Not in vanilla MPCL.
-But nothing stops you from implementing multi-task learning orthogonally to MPLC.
+But nothing stops you from implementing multi-task learning techniques orthogonally to MPLC.
 For instance, you can [implement soft parameter sharing](https://ruder.io/multi-task/index.html#softparametersharing) between processors.
 
 ##### > Can trained latent layers be safely connected to other modules without interference risks?
@@ -292,6 +311,8 @@ The starting point of MPCL is a principle as abstract as [Hebb's rule](https://e
 Simply put, this principle states that situated meaning must remain stable across time.
 MPCL is an attempt to derive an actionable framework from this (somewhat vague) principle.
 
+Moreover, it is dealing with modules.  
+
 ##### > Must processors be trained one class at a time in the Class-IL setting?
 
 Yes. If you get your data with `increment>1`, split the data into 1-increments.
@@ -314,12 +335,10 @@ of biological plausibility.
 For one thing, brains cannot allocate new feature processors out of thin air.
 Also, the outside world is not labeled.
 
-
-
 ##### > How to train non-differentiable models within this framework?
 
-Processors (inputs -> latent) and classifiers/regressors (latent -> targets) are typically trained conjointly,
-which is where gradient descent shines, provided all the models involved are differentiable.
+Processors (inputs -> latent) and classifiers/regressors (latent -> targets) are typically trained conjointly.
+This is gradient descent shines, provided all the models involved are differentiable.
 
 You may be able to get good results
 with [coordinate descent](https://en.wikipedia.org/wiki/Coordinate_descent) on non-differentiable models.
