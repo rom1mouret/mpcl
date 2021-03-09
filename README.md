@@ -5,6 +5,7 @@ The core idea remains the same but it is framed a bit differently.
 
 ```diff
 + 2021 Feb update: MPCL rules are now explained in the slides.
++ 2021 March update: the slides now introduce the problem with intuition pumps.
 ```
 Link to [MPCL_v1_slides.pdf](MPCL_v1_slides.pdf)
 
@@ -91,26 +92,38 @@ units" in more rigorous terms.
 
 [link to MPCL Framework v1 pdf](MPCL-Framework-v1.pdf)
 
-I will also attempt to frame bare-bones [Domain-IL and Class-IL](https://arxiv.org/pdf/1904.07734v1.pdf)
+# Proto-MPCL
+
+Proto-MPCL is a solution to catastrophic forgetting wherein each input domain
+is routed to its own dedicated processor. We rely on finding inconsistencies and
+discrepancies to detect domain boundaries.
+
+MPCL is not strongly committed to that way of overcoming forgetting,
+but this multi-processor approach makes it easier to make sense of generalization,
+abstraction and transferability from one domain to another.
+
+I will attempt to frame bare-bones [Domain-IL and Class-IL](https://arxiv.org/pdf/1904.07734v1.pdf)
 within this framework on MNIST and EMNIST datasets.
 Admittedly, it takes a bit of shoehorning because simple systems don't create
-many opportunities for MPCL to take advantage of the complexity to find
+many opportunities for Proto-MPCL to take advantage of the complexity to find
 inconsistencies, for example by cross-checking predictions from multiple modules
 of the system.  
 
 Moreover, complex systems are generally upheld by high-dimensional latent
 representations, with a [lot of empty space](https://en.wikipedia.org/wiki/Curse_of_dimensionality#Blessing_of_dimensionality)
 wherein you would typically spot inconsistent configurations of latent values.
-MPCL relies on finding inconsistencies to detect domain boundaries.
 
 You will notice that the implemented system doesn't showcase any of the
 inter-module [MPCL rules](MPCL_v1_slides.pdf).
 This is because MNIST and EMNIST are not readily modularizable problems, so
 we are essentially stuck with the one-module scenario.
 
-Nevertheless, it is a requirement for MPCL to perform well one one-module scenarios.
-Otherwise, it won't scale well to multiple modules.
-
+Since we are not dealing with how modules are connected with one another,
+I am dubbing the one-module case "Proto-MPCL". For MPCL to work at a larger scale,
+we need proto-MPCL to do quite well on isolated continual-learning tasks. On paper,
+it doesn't need to be perfect though. Like I said above, the more
+modules you combine to satisfy various goals, the easier it gets to find
+ways of detecting inconsistencies between the modules' outputs.
 
 ## Domain-IL classification on Permuted MNIST
 
@@ -144,7 +157,7 @@ For Class-IL, I chose EMNIST because it includes more classes than MNIST.
 The anchoring step is performed on EMNIST digits while the continual learning
 and the evaluation are done on EMNIST letters.
 
-MPCL framework doesn't lend itself well to Class-IL, but with a bit of trickery,
+Proto-MPCL doesn't lend itself well to Class-IL, but with a bit of trickery,
 EMNIST Class-IL can be expressed as a Domain-IL problem.
 
 - instead of training a classifier to recognize characters, have it predict how
@@ -219,7 +232,7 @@ It doesn't affect Permuted MNIST and EMNIST results that much because latent
 representations are not transferred to other modules in our experimental setup.
 
 
-### Terminology
+## Terminology
 
 A *group* of latent units has a *function*.
 Within this group, individual latent units have a *meaning*.
@@ -236,7 +249,7 @@ I plan on extending MPCL to function-free intrinsic meaning (latent units that g
 their meaning from adjacent units), in contrast to extrinsic meaning (latent
 units that get their meaning from external labels/feedback).
 
-### FAQ
+## FAQ
 
 ##### > Must domain labels be known at training time?
 
@@ -338,7 +351,7 @@ Also, the outside world is not labeled.
 ##### > How to train non-differentiable models within this framework?
 
 Processors (inputs -> latent) and classifiers/regressors (latent -> targets) are typically trained conjointly.
-This is gradient descent shines, provided all the models involved are differentiable.
+This is where gradient descent shines, provided all the models involved are differentiable.
 
 You may be able to get good results
 with [coordinate descent](https://en.wikipedia.org/wiki/Coordinate_descent) on non-differentiable models.
@@ -346,3 +359,30 @@ with [coordinate descent](https://en.wikipedia.org/wiki/Coordinate_descent) on n
 Alternatively, if the classifiers/regressors are designed to be analytically invertible,
 then you can calculate the latent values that correspond to the targets, and train processors to
 predict the latent values as if they were the ground-truth.
+
+
+##### > Isn't stabilizing meaning the same as stabilizing representations?
+
+I mean "representation" in the ML sense, as in "[representation learning](https://en.wikipedia.org/wiki/Feature_learning)".
+I do not mean "mental representation".
+
+In that sense, if Representation-Preserving Continual Learning (RPCL) were a thing,
+it would not be the same thing as MPCL. It would be more limited and limiting.
+
+Not every representation vector needs stability, whereas meaning always needs stability.
+Also, representation vectors can be more fine-grained than meaning.
+
+In a classification setting, each class' representation vectors need stability.
+Meaning is not a particularly useful concept in such a setting because it is
+conceivable to enumerate all the representation vectors that need stability
+without resorting to any other concept.
+
+In regression and motor settings, however, it becomes harder to identify the representations
+that need stability`*` and it is useful to look at the problem from a meaning angle,
+i.e. the link between representations and goals.
+Goal-realizing functions need to remain *accurate*.
+They need not remain *stable* at all times.
+
+`*` I’m still debating whether it would be practical or not to require stability
+for every single representation vector of the training set,
+thereby doing away with meaning.
