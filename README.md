@@ -1,15 +1,13 @@
 # Meaning-preserving Continual Learning (MPCL)
 
 This is a follow-up to [domain_IL](https://github.com/rom1mouret/domain_IL).
-The core idea remains the same but it is framed a bit differently.
+The core idea remains the same but it is framed differently.
 
 ```diff
 + 2021 Feb update: MPCL rules are now explained in the slides.
 + 2021 March update: the slides now introduce the problem with intuition pumps.
 ```
 Link to [MPCL_v1_slides.pdf](MPCL_v1_slides.pdf)
-
-### Situated meaning
 
 MPCL posits that latent representations acquire meaning by acting on the
 outside world.
@@ -18,12 +16,8 @@ For continual learning to be manageable in complex environments and avoid
 [catastrophic forgetting](https://github.com/rom1mouret/forgetful-networks),
 meaning must remain stable over time. This is the core idea behind MPCL.
 
-MPCL borrows ideas from [embodied cognition](https://en.wikipedia.org/wiki/Embodied_cognition),
-but I should point out that MPCL is not completely in line with current embodied/situated cognition theories.
-In particular, MPCL version1 is very much human-aligned, and not well suited for
-dealing with autonomous robots and other forms of embodied intelligence.
+### Situated meaning
 
-In MPCL, meaning is central.
 As the inputs and outputs of algorithms have no intrinsic meaning,
 it is often the prerogative of the programmer to attach meaning to variables.
 
@@ -32,15 +26,18 @@ There are two kinds of meaning at play here.
 1. meaning that emerges from the interplay with the environment. For instance,
 frogs might view insects as mere calorie dispensers. Needless to say,
 humans don't see insects the same way.
-2. meaning from the programmer's perspective, which roughly aligns
-with [all the other humans](https://en.wikipedia.org/wiki/Intersubjectivity).
+2. meaning from the programmer's perspective, which is roughly the same for
+[everyone](https://en.wikipedia.org/wiki/Intersubjectivity).
 
 Since the programmer's perspective (e.g. labels) is a byproduct of her environment,
 it is not too much of a leap to treat her perspective as a proxy for her environment.
 This is how I want to get away with explicitly modeling the environment in MPCL v1.
+
 Take for instance a model categorizing x-ray images of tumors into malignant or benign.
 If the model is deployed in a hospital, those labels have a tangible impact on the
-environment.
+environment. Labels bridge the gap between models and their deployment environment.
+If you swap "malignant" with "benign" without changing the model's computation,
+you end up with a very different situation.
 
 So MPCL has two jobs:
 
@@ -49,7 +46,7 @@ I expect the first kind of meaning to converge towards the second kind.
 - making sure meaning remains stable over time.
 
 
-### Concrete example
+### Continual learning (example)
 
 Your system's training journey might start like that:
 - module A: time T0 to T1: training the model to recognize human faces.
@@ -91,6 +88,26 @@ Now, my goal is to formalize this idea and characterize the "meaning of latent
 units" in more rigorous terms.
 
 [link to MPCL Framework v1 pdf](MPCL-Framework-v1.pdf)
+
+
+### Domain generalization
+
+Both continual learning and [domain generalization](https://arxiv.org/pdf/2103.02503.pdf)
+techniques try to create rich representations in a non-i.i.d. setting.
+Domain generalization can be seen as a special case of
+[domain-IL](https://arxiv.org/pdf/1904.07734v1.pdf) wherein most of
+the hard work is done *before* observing out-of-distribution data.
+
+One of the most promising approaches to domain generalization is causal
+representation learning. The idea of uncovering the causal structure of the
+problem is similar to MPCL's meaning alignment.
+
+MPCL is akin to inverse domain generalization.
+Instead of building high-quality abstraction hypotheses that are meant to
+generalize well to unknown domains from the get go, the MPCL way would be to
+try out hypotheses over many domains to assess their generalization power.
+If they pass the quality test, they are entrusted with stronger, longer-lasting
+connectivity with other modules.
 
 # Proto-MPCL
 
@@ -386,3 +403,12 @@ They need not remain *stable* at all times.
 `*` I’m still debating whether it would be practical or not to require stability
 for every single representation vector of the training set,
 thereby doing away with meaning.
+
+##### > How does it relate to embodied cognition?
+
+MPCL borrows ideas from
+[embodied cognition](https://en.wikipedia.org/wiki/Embodied_cognition),
+but I should point out that MPCL is not completely in line with
+current embodied/situated cognition theories. In particular, MPCL version1 is
+very much human-aligned, and not well suited for dealing with autonomous robots
+and other forms of embodied intelligence where humans are not in the loop.
