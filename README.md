@@ -45,6 +45,8 @@ So MPCL has two jobs:
 I expect the first kind of meaning to converge towards the second kind.
 - making sure meaning remains stable over time.
 
+In what follows, I will use "latent units" and "abstraction layer" interchangeably.
+It refers to the last NN layer of the processing modules. 
 
 ### Continual learning (example)
 
@@ -54,18 +56,18 @@ Your system's training journey might start like that:
 - module A: time T4 to T5: training the model to get better at recognizing human
 faces, maybe in a novel context.
 
-At time T1, your model and its latent units are perfectly fit for recognizing
+At time T1, your model and its abstraction layer are perfectly fit for recognizing
 faces within domains it was trained on.
 
 At time T2, your model moves on to learning to distinguish between cats and dogs.
-It can build on module A's latent layer but it should not interfere with it
-because the function of module A's latent layer is to recognize human faces, not
+It can build on module A's abstraction layer but it should not interfere with it
+because the function of module A's abstraction layer is to recognize human faces, not
 to recognize human faces AND pets. In programming terms, module A's network is
 entirely frozen between T2 and T3.
 
 At T4, we are back to face recognition.
-Module A's latent representation can be safely refined as long as it keeps on
-fulfilling the same invariant function.
+Module A's internals can be safely refined so long as it keeps on delivering
+abstractions that fulfill the same invariant function.
 This might interfere with module B, but not in a
 [destructive manner](https://en.wikipedia.org/wiki/Catastrophic_interference).
 
@@ -78,7 +80,7 @@ function-that-latent-representations-were-originally-trained-for *is* what
 defines latent representations.
 
 (By "function" I do not mean the mapping from sensory inputs to labels.
-I mean the functions that map latent representations to labels, or other kinds of outputs.
+I mean the functions that map the abstraction layer to labels, or other kinds of outputs.
 Recognizing faces in photographs fulfills the same function as recognizing faces
 in real life.
 Your friend's face is an abstraction in virtue of the realizability of the same
@@ -144,9 +146,9 @@ ways of detecting inconsistencies between the modules' outputs.
 
 ## Domain-IL classification on Permuted MNIST
 
-In this scenario, the most straight-forward approach is to tether the latent
-units directly to the output classes.
-To do so, we train a classifier to map latent units to classes on an arbitrary
+In this scenario, the most straight-forward approach is to tether the
+abstraction layer directly to the output classes.
+To do so, we train a classifier to map the abstraction layer to classes on an arbitrary
 domain and freeze the classifier right away.
 
 Following the naming conventions in [MPCL-Framework-v1](MPCL-Framework-v1.pdf),
@@ -320,7 +322,7 @@ Not in vanilla MPCL.
 But nothing stops you from implementing multi-task learning techniques orthogonally to MPLC.
 For instance, you can [implement soft parameter sharing](https://ruder.io/multi-task/index.html#softparametersharing) between processors.
 
-##### > Can trained latent layers be safely connected to other modules without interference risks?
+##### > Can trained abstraction layers be safely connected to other modules without interference risks?
 
 Yes, that's the whole point of MPCL.
 When new domains are learned, it is beneficial to downstream modules,
@@ -367,7 +369,7 @@ Also, the outside world is not labeled.
 
 ##### > How to train non-differentiable models within this framework?
 
-Processors (inputs -> latent) and classifiers/regressors (latent -> targets) are typically trained conjointly.
+Processors (inputs -> abstraction) and classifiers/regressors (abstraction -> targets) are typically trained conjointly.
 This is where gradient descent shines, provided all the models involved are differentiable.
 
 You may be able to get good results
@@ -384,7 +386,7 @@ I mean "representation" in the ML sense, as in "[representation learning](https:
 I do not mean "mental representation".
 
 In that sense, if Representation-Preserving Continual Learning (RPCL) were a thing,
-it would not be the same thing as MPCL. It would be more limited and limiting.
+it would not be the same thing as MPCL. It would be more limited and more limiting.
 
 Not every representation vector needs stability, whereas meaning always needs stability.
 Also, representation vectors can be more fine-grained than meaning.
@@ -409,6 +411,6 @@ thereby doing away with meaning.
 MPCL borrows ideas from
 [embodied cognition](https://en.wikipedia.org/wiki/Embodied_cognition),
 but I should point out that MPCL is not completely in line with
-current embodied/situated cognition theories. In particular, MPCL version1 is
-very much human-aligned, and not well suited for dealing with autonomous robots
+current embodied/situated cognition theories. In particular, because of the reliance on labels,
+MPCL version1 is very much human-aligned, and not well suited for dealing with autonomous robots
 and other forms of embodied intelligence where humans are not in the loop.
