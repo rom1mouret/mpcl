@@ -405,12 +405,3 @@ They need not remain *stable* at all times.
 `*` I’m still debating whether it would be practical or not to require stability
 for every single representation vector of the training set,
 thereby doing away with meaning.
-
-##### > How does it relate to embodied cognition?
-
-MPCL borrows ideas from
-[embodied cognition](https://en.wikipedia.org/wiki/Embodied_cognition),
-but I should point out that MPCL is not completely in line with
-current embodied/situated cognition theories. In particular, because of the reliance on labels,
-MPCL version1 is very much human-aligned, and not well suited for dealing with autonomous robots
-and other forms of embodied intelligence where humans are not in the loop.
